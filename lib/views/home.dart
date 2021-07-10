@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart';
+import 'package:progress_indicators/progress_indicators.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -25,49 +26,42 @@ class _HomeState extends State<Home> {
     setState(() {
       _loading = false;
     });
-    // getNews();
   }
-
-  // getNews() async {
-  //   News newsClass = News();
-  //   await newsClass.getNews();
-  //   articles = newsClass.news;
-  //
-  // }
 
   @override
   Widget build(BuildContext context) {
     final PageController controller = PageController(initialPage: 0);
 
     return Scaffold(
-      body: _loading
-          ? LoadingScreen()
-          : FutureBuilder(
-              future: client.getNews(),
-              builder: (BuildContext context,
-                  AsyncSnapshot<List<ArticleModel>> snapshot) {
-                if (snapshot.hasData) {
-                  List<ArticleModel>? articles = snapshot.data;
-                  return PageView.builder(
-                    itemCount: articles!.length,
-                    scrollDirection: Axis.vertical,
-                    controller: controller,
-                    itemBuilder: (context, index) {
-                      return BlogTile(
-                        headline: articles[index].title,
-                        date: "gh",
-                        image: articles[index].urlToImage,
-                        content: articles[index].description,
-                      );
-                    },
+      body: FutureBuilder(
+        future: client.getNews(),
+        builder:
+            (BuildContext context, AsyncSnapshot<List<ArticleModel>> snapshot) {
+          if (snapshot.hasData) {
+            List<ArticleModel>? articles = snapshot.data;
+            return SafeArea(
+              child: PageView.builder(
+                itemCount: articles!.length,
+                scrollDirection: Axis.vertical,
+                controller: controller,
+                itemBuilder: (context, index) {
+                  return BlogTile(
+                    headline: articles[index].title,
+                    publishedAt: articles[index].publishedAt,
+                    image: articles[index].urlToImage,
+                    author: articles[index].author,
+                    content: articles[index].content,
+                    url: articles[index].url,
+                    description: articles[index].description,
                   );
-                } else {
-                  return Center(
-                    child: CircularProgressIndicator(),
-                  );
-                }
-              },
-            ),
+                },
+              ),
+            );
+          } else {
+            return LoadingScreen();
+          }
+        },
+      ),
     );
   }
 }
@@ -88,20 +82,22 @@ class LoadingScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  "e",
-                  style: TextStyle(fontSize: 25, fontWeight: FontWeight.w600),
+                  "In",
+                  style: TextStyle(fontSize: 25, fontWeight: FontWeight.w500),
                 ),
                 Text(
-                  "News",
+                  "Short",
                   style: TextStyle(
                       color: Colors.blue,
                       fontSize: 25,
-                      fontWeight: FontWeight.w600),
+                      fontWeight: FontWeight.bold),
                 ),
               ],
             ),
-            SizedBox(height: 50),
-            CircularProgressIndicator()
+            JumpingDotsProgressIndicator(
+              fontSize: 50,
+              color: Colors.black38,
+            ),
           ],
         ),
       ),
